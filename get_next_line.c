@@ -36,7 +36,7 @@ void	mv_buffer(char **buffer, int index)
 		(*buffer)[i] = '\0';
 }
 
-int		extend_line(char **line, char **buffer)
+int		extend_line(char **line, char **buffer, int res)
 {
 	char		*mv_char;
 	int			length;
@@ -57,7 +57,7 @@ int		extend_line(char **line, char **buffer)
 //	ft_putendl(mv_char);
 	*line = ft_strjoin(*line, mv_char);
 	ft_strdel(&mv_char);
-	if ((int)ft_strlen(*buffer) > length)
+	if ((int)ft_strlen(*buffer) > length || res < BUFF_SIZE)
 	{
 		mv_buffer(buffer, length);
 		return (1);
@@ -79,14 +79,14 @@ int		get_next_line(const int fd, char **line)
 	}
 	if (!(buffer) || !(*buffer) || fd < 0 || !(line) || !(*line))
 		return (-1);
-	ft_putstr("BUFFER : ");
-	ft_putendl(*buffer);
+//	ft_putstr("BUFFER : ");
+//	ft_putendl(*buffer);
 	if (**buffer == EOF)
 	{
 		ft_strdel(buffer);
 		return (0);
 	}
-	if (extend_line(line, buffer) == 1)
+	if (extend_line(line, buffer, BUFF_SIZE) == 1)
 		return (1);
 	while ((res = read(fd, *buffer, BUFF_SIZE)) != 0 && res != -1)
 	{
@@ -95,12 +95,12 @@ int		get_next_line(const int fd, char **line)
 			(*buffer)[i] = '\0';
 //		ft_putstr("INSIDE LOOP : ");
 //		ft_putendl(*buffer);
-		if (extend_line(line, buffer) == 1)
+		if (extend_line(line, buffer, res) == 1)
 			return (1);
 	}
 	if (res == 0)
 		**buffer = EOF;
 //	ft_strdel(buffer);
-	ft_putendl("RETURNS HERE");
-	return (res == 0 ? 1 : -1);
+//	return (res == 0 ? 1 : -1);
+	return (res);
 }

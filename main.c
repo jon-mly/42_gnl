@@ -19,7 +19,7 @@ int		main()
 	int		res;
 
 	res = 1;
-	fd = open("test2.txt", O_RDONLY);
+	fd = open("test6.txt", O_RDONLY);
 	if (fd < 0)
 		return (-1);
 	char **line = malloc(sizeof(char*));
