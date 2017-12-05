@@ -19,12 +19,19 @@ int		main()
 	int		res;
 
 	res = 1;
-	fd = open("test3.txt", O_RDONLY);
-	if (fd == -1)
+	fd = open("test2.txt", O_RDONLY);
+	if (fd < 0)
 		return (-1);
 	char **line = malloc(sizeof(char*));
-	while ((res = get_next_line(fd, line)))
-		printf("\n%d - %s\n", res, *line);
-	printf("\n%d - %s\n", res, *line);
+	while ((res = get_next_line(fd, line)) == 1)
+	{
+		ft_putnbr(res);
+		ft_putstr(" - ");
+		ft_putendl(*line);
+	}
+		ft_putnbr(res);
+		ft_putstr(" - ");
+		ft_putendl(*line);
+	close(fd);
 	return (0);
 }
