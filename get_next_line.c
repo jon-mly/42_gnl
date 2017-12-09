@@ -1,106 +1,97 @@
 #include "get_next_line.h"
 
-int		movable_char(char *str)
+t_buffer	*get_buffer(int fd, t_buffer **node)
 {
-	int		i;
+	t_buffer	*current;
 
-	i = -1;
-	while (str[++i])
-	{
-		if (str[i] == '\n' || str[i] == EOF)
-			return (i);
-	}
-	return (i);
-}
-
-char	*append_char(char *str, int nb)
-{
-	char	*dest;
-
-	if (!(dest = ft_strnew(nb)))
+	if (!(node) && !(node = (t_buffer **)malloc(sizeof(t_buffer))))
 		return (NULL);
-	dest = ft_strncpy(dest, str, nb);
-	dest[nb + 1] = '\0';
-	return (dest);
+	current = *node;
+	while (current)
+	{
+		if (current->fd == fd)
+			return (current);
+	}
+	if (!(current = (t_buffer *)malloc(sizeof(t_buffer))))
+		return (NULL);
+	current->fd = fd;
+	current->str = ft_strnew(BUFF_SIZE);
+	current->next = *node;
+	*node = current;
+	return (current);
 }
 
-void	mv_buffer(char **buffer, int index)
+int		extend_line(t_buffer *buffer, char **line)
 {
-	int		i;
-	int		length;
+	char 		*tmp;
+	int 		index;
 
-	length = ft_strlen((*buffer) + index + 1);
-	ft_memmove(*buffer, (*buffer) + index + 1, length);
-	i = length - 1;
-	while ((*buffer)[++i])
-		(*buffer)[i] = '\0';
-}
-
-int		extend_line(char **line, char **buffer, int res)
-{
-	char		*mv_char;
-	int			length;
-
-	length = movable_char(*buffer);
-	if (!(**buffer))
-		return (0);
-//	ft_putstr("len : ");
-//	ft_putnbr(length);
-//	ft_putchar('\n');
-	if (length == 0)
+	if (ft_strchr(buffer->str, '\n'))
+		index = (int)(ft_strchr(buffer->str, '\n') - buffer->str);
+	else
+		index = BUFF_SIZE;	// Will always be out of read size.
+	buffer->str[index] = '\0';
+	tmp = *line;
+	*line = ft_strjoin(tmp, buffer->str);
+	free(tmp);
+	if (index < BUFF_SIZE)
 	{
-		mv_buffer(buffer, 0);
+		ft_memmove(buffer->str, buffer->str + index + 1, BUFF_SIZE - index);
+		//ft_memset(buffer->str + index + 1, '\0', BUFF_SIZE - index);
 		return (1);
 	}
-	mv_char = append_char(*buffer, length);
-//	ft_putstr("mv_char : ");
-//	ft_putendl(mv_char);
-	*line = ft_strjoin(*line, mv_char);
-	ft_strdel(&mv_char);
-	if ((int)ft_strlen(*buffer) > length || res < BUFF_SIZE)
-	{
-		mv_buffer(buffer, length);
-		return (1);
-	}
+	ft_memset(buffer->str, '\0', BUFF_SIZE);
 	return (0);
 }
 
 int		get_next_line(const int fd, char **line)
 {
 	int				res;
-	int				i;
-	static char		**buffer = NULL;
+	static t_buffer	*list = NULL;
+	t_buffer		*buffer;
 
-	*line = ft_strnew(0);
-	if (!(buffer))
-	{
-		buffer = (char **)malloc(sizeof(char *));
-		*buffer = ft_strnew(BUFF_SIZE);
-	}
-	if (!(buffer) || !(*buffer) || fd < 0 || !(line) || !(*line))
+	// Obtention d'un t_buffer
+	buffer = get_buffer(fd, &list);
+	// Vérifications de sécurité
+	if (!(buffer) || fd < 0 || !(line) || BUFF_SIZE <= 0)
 		return (-1);
-//	ft_putstr("BUFFER : ");
-//	ft_putendl(*buffer);
-	if (**buffer == EOF)
+	// Création d'un container vide pour line.
+	*line = ft_strnew(0);
+	// A ce moment, le buffer peut contenir des caractères
+	// Il faut voir s'il n'y a pas un \n dans ce qui est lu
+	if (ft_strlen(buffer->str) > 0)
 	{
-		ft_strdel(buffer);
-		return (0);
-	}
-	if (extend_line(line, buffer, BUFF_SIZE) == 1)
-		return (1);
-	while ((res = read(fd, *buffer, BUFF_SIZE)) != 0 && res != -1)
-	{
-		i = res - 1;
-		while (++i < BUFF_SIZE)
-			(*buffer)[i] = '\0';
-//		ft_putstr("INSIDE LOOP : ");
-//		ft_putendl(*buffer);
-		if (extend_line(line, buffer, res) == 1)
+		if (ft_strchr(buffer->str, '\n'))
+		{
+			// Un \n a été trouvé : doit etendre line des chars uniquement avant
+			// le \n
+			// fermeture du buffer au \n
+			extend_line(buffer, line);
 			return (1);
+		} else {
+			// Le buffer contient des chars qui vont être ajouté à line.
+			extend_line(buffer, line);
+		}
 	}
-	if (res == 0)
-		**buffer = EOF;
-//	ft_strdel(buffer);
-//	return (res == 0 ? 1 : -1);
-	return (res);
+	// Lecture continue du fichier
+	while ((res = read(fd, buffer->str, BUFF_SIZE)) > 0 &&
+			ft_strchr(buffer->str, '\n') == NULL)
+	{
+		extend_line(buffer, line);
+	}
+	if (ft_strchr(buffer->str, '\n'))
+	{
+		extend_line(buffer, line);
+		return (1);
+		// Un \n a été trouvé : doit etendre line des chars uniquement avant
+		// le \n
+		// fermeture du buffer au \n
+	}
+	if (res == -1)
+	{
+		// Une erreur a été trouvée : nettoyage et renvoi de -1
+		return (-1);
+	}
+	// Aucun char n'a été lu : fin de fichier ou erreur
+	return (ft_strlen(*line) > 0 ? 1 : 0);
 }

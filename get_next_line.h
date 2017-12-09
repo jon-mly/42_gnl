@@ -19,9 +19,16 @@
 # include <sys/stat.h>
 # include <fcntl.h>
 
-# define BUFF_SIZE 3
+# define BUFF_SIZE 14
 
 # define EOF (-1)
+
+typedef struct  s_buffer
+{
+    char            *str;
+    int             fd;
+    struct s_buffer *next;
+}               t_buffer;
 
 int		get_next_line(const int fd, char **line);
 
