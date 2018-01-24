@@ -48,6 +48,17 @@ int		extend_line(t_buffer *buffer, char **line)
 	return (0);
 }
 
+int 	find_carriage_return(t_buffer *buffer, char **line)
+{
+	if (ft_strchr(buffer->str, '\n'))
+	{
+		extend_line(buffer, line);
+		return (1);
+	}
+	extend_line(buffer, line);
+	return (0);
+}
+
 int		get_next_line(const int fd, char **line)
 {
 	int				res;
@@ -58,16 +69,8 @@ int		get_next_line(const int fd, char **line)
 	if (!(buffer) || fd < 0 || !(line) || BUFF_SIZE <= 0)
 		return (-1);
 	*line = ft_strnew(0);
-	if (ft_strlen(buffer->str) > 0)
-	{
-		if (ft_strchr(buffer->str, '\n'))
-		{
-			extend_line(buffer, line);
-			return (1);
-		}
-		else
-			extend_line(buffer, line);
-	}
+	if (ft_strlen(buffer->str) > 0 && find_carriage_return(buffer, line))
+		return (1);
 	while ((res = read(fd, buffer->str, BUFF_SIZE)) > 0 &&
 			ft_strchr(buffer->str, '\n') == NULL)
 		extend_line(buffer, line);
