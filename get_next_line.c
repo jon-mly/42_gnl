@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jmlynarc <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/01/24 14:16:31 by jmlynarc          #+#    #+#             */
+/*   Updated: 2018/04/18 12:01:30 by jmlynarc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
 t_buffer	*get_buffer(int fd, t_buffer **node)
@@ -26,13 +38,13 @@ t_buffer	*get_buffer(int fd, t_buffer **node)
 	return (current);
 }
 
-int		extend_line(t_buffer *buffer, char **line)
+int			extend_line(t_buffer *buffer, char **line)
 {
-	char 		*tmp;
-	int 		index;
+	char		*tmp;
+	int			index;
 
-	if (ft_strchr(buffer->str, '\n'))
-		index = (int)(ft_strchr(buffer->str, '\n') - buffer->str);
+	if (ft_strchr(buffer->str, EOL))
+		index = (int)(ft_strchr(buffer->str, EOL) - buffer->str);
 	else
 		index = BUFF_SIZE;
 	buffer->str[index] = '\0';
@@ -48,9 +60,9 @@ int		extend_line(t_buffer *buffer, char **line)
 	return (0);
 }
 
-int 	find_carriage_return(t_buffer *buffer, char **line)
+int			find_carriage_return(t_buffer *buffer, char **line)
 {
-	if (ft_strchr(buffer->str, '\n'))
+	if (ft_strchr(buffer->str, EOL))
 	{
 		extend_line(buffer, line);
 		return (1);
@@ -59,7 +71,7 @@ int 	find_carriage_return(t_buffer *buffer, char **line)
 	return (0);
 }
 
-int		get_next_line(const int fd, char **line)
+int			get_next_line(const int fd, char **line)
 {
 	int				res;
 	static t_buffer	*list = NULL;
@@ -72,9 +84,9 @@ int		get_next_line(const int fd, char **line)
 	if (ft_strlen(buffer->str) > 0 && find_carriage_return(buffer, line))
 		return (1);
 	while ((res = read(fd, buffer->str, BUFF_SIZE)) > 0 &&
-			ft_strchr(buffer->str, '\n') == NULL)
+			ft_strchr(buffer->str, EOL) == NULL)
 		extend_line(buffer, line);
-	if (ft_strchr(buffer->str, '\n'))
+	if (ft_strchr(buffer->str, EOL))
 	{
 		extend_line(buffer, line);
 		return (1);

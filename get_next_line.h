@@ -6,7 +6,7 @@
 /*   By: jmlynarc <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/15 11:01:03 by jmlynarc          #+#    #+#             */
-/*   Updated: 2017/11/15 12:30:38 by jmlynarc         ###   ########.fr       */
+/*   Updated: 2018/05/08 14:40:53 by jmlynarc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,16 @@
 # include <fcntl.h>
 
 # define BUFF_SIZE 1
-
+# define EOL '\n'
 # define EOF (-1)
 
-typedef struct  s_buffer
+typedef struct	s_buffer
 {
-    char            *str;
-    int             fd;
-    struct s_buffer *next;
-}               t_buffer;
+	char				*str;
+	int					fd;
+	struct s_buffer		*next;
+}				t_buffer;
 
-int		get_next_line(const int fd, char **line);
+int				get_next_line(const int fd, char **line);
 
 #endif
