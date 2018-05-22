@@ -19,7 +19,7 @@
 # include <sys/stat.h>
 # include <fcntl.h>
 
-# define BUFF_SIZE 1
+# define BUFF_SIZE 100
 # define EOL '\n'
 # define EOF (-1)
 
